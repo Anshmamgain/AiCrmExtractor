@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList;
@@ -37,14 +37,25 @@ export const useSpeechToText = () => {
   
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
-  const initializeRecognition = useCallback(() => {
-    if (typeof window === 'undefined') return false;
+  // Initialize on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
     
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     
     if (!SpeechRecognition) {
-      setError('Speech recognition is not supported in this browser');
-      return false;
+      setError('Speech recognition is not supported in this browser. Try Chrome or Edge.');
+      return;
+    }
+
+    // Check if we're in a secure context or on localhost/replit
+    const isSecure = window.isSecureContext || 
+                    window.location.hostname === 'localhost' ||
+                    window.location.hostname.includes('replit.dev');
+    
+    if (!isSecure) {
+      setError('Speech recognition requires HTTPS connection');
+      return;
     }
 
     setIsSupported(true);
@@ -56,18 +67,17 @@ export const useSpeechToText = () => {
 
     recognition.addEventListener('result', (event: SpeechRecognitionEvent) => {
       let finalTranscript = '';
-      let interimTranscript = '';
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
-          finalTranscript += transcript;
-        } else {
-          interimTranscript += transcript;
+          finalTranscript += transcript + ' ';
         }
       }
 
-      setTranscript(prev => prev + finalTranscript);
+      if (finalTranscript) {
+        setTranscript(prev => prev + finalTranscript);
+      }
     });
 
     recognition.addEventListener('start', () => {
@@ -85,20 +95,24 @@ export const useSpeechToText = () => {
     });
 
     recognitionRef.current = recognition;
-    return true;
   }, []);
 
   const startListening = useCallback(() => {
-    if (!recognitionRef.current && !initializeRecognition()) {
+    if (!isSupported || !recognitionRef.current) {
+      setError('Speech recognition is not available');
       return;
     }
 
-    if (recognitionRef.current && !isListening) {
+    if (!isListening) {
       setTranscript('');
       setError(null);
-      recognitionRef.current.start();
+      try {
+        recognitionRef.current.start();
+      } catch (err) {
+        setError('Failed to start speech recognition');
+      }
     }
-  }, [initializeRecognition, isListening]);
+  }, [isSupported, isListening]);
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current && isListening) {
