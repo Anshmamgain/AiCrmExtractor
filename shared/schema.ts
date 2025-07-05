@@ -1,4 +1,5 @@
 import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -45,6 +46,30 @@ export const extractions = pgTable("extractions", {
   syncedToHubspot: boolean("synced_to_hubspot").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+// Define relations
+export const contactsRelations = relations(contacts, ({ one }) => ({
+  company: one(companies, {
+    fields: [contacts.companyId],
+    references: [companies.id],
+  }),
+}));
+
+export const companiesRelations = relations(companies, ({ many }) => ({
+  contacts: many(contacts),
+  deals: many(deals),
+}));
+
+export const dealsRelations = relations(deals, ({ one }) => ({
+  contact: one(contacts, {
+    fields: [deals.contactId],
+    references: [contacts.id],
+  }),
+  company: one(companies, {
+    fields: [deals.companyId],
+    references: [companies.id],
+  }),
+}));
 
 export const insertContactSchema = createInsertSchema(contacts).omit({
   id: true,

@@ -156,4 +156,79 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+import { db } from "./db";
+import { eq } from "drizzle-orm";
+
+export class DatabaseStorage implements IStorage {
+  async getContact(id: number): Promise<Contact | undefined> {
+    const [contact] = await db.select().from(contacts).where(eq(contacts.id, id));
+    return contact || undefined;
+  }
+
+  async createContact(insertContact: InsertContact): Promise<Contact> {
+    const [contact] = await db
+      .insert(contacts)
+      .values(insertContact)
+      .returning();
+    return contact;
+  }
+
+  async getCompany(id: number): Promise<Company | undefined> {
+    const [company] = await db.select().from(companies).where(eq(companies.id, id));
+    return company || undefined;
+  }
+
+  async createCompany(insertCompany: InsertCompany): Promise<Company> {
+    const [company] = await db
+      .insert(companies)
+      .values(insertCompany)
+      .returning();
+    return company;
+  }
+
+  async getDeal(id: number): Promise<Deal | undefined> {
+    const [deal] = await db.select().from(deals).where(eq(deals.id, id));
+    return deal || undefined;
+  }
+
+  async createDeal(insertDeal: InsertDeal): Promise<Deal> {
+    const [deal] = await db
+      .insert(deals)
+      .values(insertDeal)
+      .returning();
+    return deal;
+  }
+
+  async getExtraction(id: number): Promise<Extraction | undefined> {
+    const [extraction] = await db.select().from(extractions).where(eq(extractions.id, id));
+    return extraction || undefined;
+  }
+
+  async createExtraction(insertExtraction: InsertExtraction): Promise<Extraction> {
+    const [extraction] = await db
+      .insert(extractions)
+      .values(insertExtraction)
+      .returning();
+    return extraction;
+  }
+
+  async updateExtraction(id: number, updates: Partial<InsertExtraction>): Promise<Extraction> {
+    const [extraction] = await db
+      .update(extractions)
+      .set(updates)
+      .where(eq(extractions.id, id))
+      .returning();
+    
+    if (!extraction) {
+      throw new Error("Extraction not found");
+    }
+    
+    return extraction;
+  }
+
+  async getAllExtractions(): Promise<Extraction[]> {
+    return await db.select().from(extractions).orderBy(extractions.createdAt);
+  }
+}
+
+export const storage = new DatabaseStorage();

@@ -90,6 +90,7 @@ This is a full-stack React application that uses AI to extract CRM data from mee
 - July 05, 2025: Initial setup with complete CRM Assistant application
 - July 05, 2025: Fixed Zod schema validation error for null values in OpenAI extraction
 - July 05, 2025: Successfully implemented AI-powered data extraction with HubSpot integration
+- July 05, 2025: Added PostgreSQL database integration with Drizzle ORM and database relations
 
 ## User Preferences
 
