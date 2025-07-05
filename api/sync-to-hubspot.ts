@@ -114,14 +114,27 @@ class HubSpotService {
       options.body = JSON.stringify(data);
     }
 
+    console.log(`🔄 Making HubSpot API request:`);
+    console.log(`   URL: ${url}`);
+    console.log(`   Method: ${method}`);
+    console.log(`   API Key prefix: ${this.apiKey.substring(0, 10)}...`);
+    console.log(`   Data:`, JSON.stringify(data, null, 2));
+
     const response = await fetch(url, options);
+    
+    console.log(`📡 HubSpot API response:`);
+    console.log(`   Status: ${response.status} ${response.statusText}`);
+    console.log(`   Headers:`, Object.fromEntries(response.headers.entries()));
     
     if (!response.ok) {
       const errorText = await response.text();
+      console.error(`❌ HubSpot API error: ${response.status} - ${errorText}`);
       throw new Error(`HubSpot API error: ${response.status} - ${errorText}`);
     }
 
-    return response.json();
+    const result = await response.json();
+    console.log(`✅ HubSpot API success:`, result);
+    return result;
   }
 
   async createContact(contactData: {
@@ -253,6 +266,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     console.log("Parsing extracted data...");
     const extractedData = JSON.parse(extraction.extractedData);
+    console.log("📊 Extracted data to sync:", JSON.stringify(extractedData, null, 2));
     const syncResults: any = {};
 
     const hubspotService = new HubSpotService();
@@ -261,13 +275,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let companyId: string | undefined;
     if (syncOptions.createCompany && extractedData.company?.name) {
       try {
-        console.log("Creating company in HubSpot...");
+        console.log("🏢 Creating company in HubSpot...");
+        console.log("   Company data:", JSON.stringify(extractedData.company, null, 2));
         const company = await hubspotService.createCompany(extractedData.company);
         companyId = company.id;
         syncResults.company = { success: true, id: company.id };
+        console.log("✅ Company created successfully with ID:", company.id);
         
         // Store company in our database
-        console.log("Storing company in database...");
+        console.log("💾 Storing company in database...");
         await db.insert(companies).values({
           name: extractedData.company.name,
           industry: extractedData.company.industry,
@@ -277,25 +293,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           confidence: extractedData.company.confidence || 0,
         });
       } catch (error) {
-        console.error("Company creation failed:", error);
+        console.error("❌ Company creation failed:", error);
         syncResults.company = { success: false, error: (error as Error).message };
       }
+    } else {
+      console.log("⏭️  Skipping company creation - disabled or no company name");
     }
 
     // Create contact (if enabled and data exists)
     let contactId: string | undefined;
     if (syncOptions.createContact && extractedData.contact?.email) {
       try {
-        console.log("Creating contact in HubSpot...");
-        const contact = await hubspotService.createContact({
+        console.log("👤 Creating contact in HubSpot...");
+        const contactData = {
           ...extractedData.contact,
           companyName: extractedData.company?.name,
-        });
+        };
+        console.log("   Contact data:", JSON.stringify(contactData, null, 2));
+        const contact = await hubspotService.createContact(contactData);
         contactId = contact.id;
         syncResults.contact = { success: true, id: contact.id };
+        console.log("✅ Contact created successfully with ID:", contact.id);
         
         // Store contact in our database
-        console.log("Storing contact in database...");
+        console.log("💾 Storing contact in database...");
         await db.insert(contacts).values({
           name: extractedData.contact.name,
           email: extractedData.contact.email,
@@ -305,24 +326,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           confidence: extractedData.contact.confidence || 0,
         });
       } catch (error) {
-        console.error("Contact creation failed:", error);
+        console.error("❌ Contact creation failed:", error);
         syncResults.contact = { success: false, error: (error as Error).message };
       }
+    } else {
+      console.log("⏭️  Skipping contact creation - disabled or no contact email");
     }
 
     // Create deal (if enabled and data exists)
     if (syncOptions.createDeal && extractedData.deal?.name) {
       try {
-        console.log("Creating deal in HubSpot...");
-        const deal = await hubspotService.createDeal({
+        console.log("🤝 Creating deal in HubSpot...");
+        const dealData = {
           ...extractedData.deal,
           contactId,
           companyId,
-        });
+        };
+        console.log("   Deal data:", JSON.stringify(dealData, null, 2));
+        const deal = await hubspotService.createDeal(dealData);
         syncResults.deal = { success: true, id: deal.id };
+        console.log("✅ Deal created successfully with ID:", deal.id);
         
         // Store deal in our database
-        console.log("Storing deal in database...");
+        console.log("💾 Storing deal in database...");
         await db.insert(deals).values({
           name: extractedData.deal.name,
           value: extractedData.deal.value,
@@ -332,9 +358,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           confidence: extractedData.deal.confidence || 0,
         });
       } catch (error) {
-        console.error("Deal creation failed:", error);
+        console.error("❌ Deal creation failed:", error);
         syncResults.deal = { success: false, error: (error as Error).message };
       }
+    } else {
+      console.log("⏭️  Skipping deal creation - disabled or no deal name");
     }
 
     // Update extraction as synced
