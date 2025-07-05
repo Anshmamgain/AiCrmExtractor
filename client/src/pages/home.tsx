@@ -94,6 +94,7 @@ export default function Home() {
   // Extract data mutation - now calling OpenAI directly
   const extractMutation = useMutation({
     mutationFn: async (summary: string) => {
+      // Step 1: Call OpenAI to extract the data
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
@@ -147,9 +148,16 @@ export default function Home() {
 
       const extractedJson = JSON.parse(response.choices[0].message.content || "{}");
       
-      // Return in the same format as the backend would
+      // Step 2: Store the extraction in the database
+      const storeResponse = await apiRequest("POST", "/api/store-extraction", {
+        meetingSummary: summary,
+        extractedData: extractedJson
+      });
+      const storeResult = await storeResponse.json();
+      
+      // Return with the real database ID
       return {
-        id: Date.now(), // Generate a fake ID
+        id: storeResult.id,
         extractedData: extractedJson
       } as ExtractionResponse;
     },
