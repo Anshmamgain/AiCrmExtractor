@@ -47,7 +47,9 @@ export async function extractCRMData(meetingSummary: string): Promise<ExtractedD
           - For company size, use format like "50 employees" or "small team"
           - For deal stage, use standard sales stages like "Qualified Lead", "Proposal", "Negotiation"
           - Generate appropriate deal names like "Company Name - Product/Service"
-          - Use null for missing information, don't make assumptions`
+          - IMPORTANT: Use null (not undefined) for missing information, don't make assumptions
+          - Ensure all string fields are either valid strings or explicitly null
+          - Always include confidence scores as numbers between 0-100`
         },
         {
           role: "user",

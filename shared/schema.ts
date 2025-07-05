@@ -78,24 +78,24 @@ export type InsertExtraction = z.infer<typeof insertExtractionSchema>;
 
 export const extractedDataSchema = z.object({
   contact: z.object({
-    name: z.string().optional(),
-    email: z.string().optional(),
-    title: z.string().optional(),
-    phone: z.string().optional(),
+    name: z.union([z.string(), z.null()]).optional(),
+    email: z.union([z.string(), z.null()]).optional(),
+    title: z.union([z.string(), z.null()]).optional(),
+    phone: z.union([z.string(), z.null()]).optional(),
     confidence: z.number().min(0).max(100).default(0),
   }),
   company: z.object({
-    name: z.string().optional(),
-    industry: z.string().optional(),
-    size: z.string().optional(),
-    website: z.string().optional(),
+    name: z.union([z.string(), z.null()]).optional(),
+    industry: z.union([z.string(), z.null()]).optional(),
+    size: z.union([z.string(), z.null()]).optional(),
+    website: z.union([z.string(), z.null()]).optional(),
     confidence: z.number().min(0).max(100).default(0),
   }),
   deal: z.object({
-    name: z.string().optional(),
-    value: z.number().optional(),
-    closeDate: z.string().optional(),
-    stage: z.string().optional(),
+    name: z.union([z.string(), z.null()]).optional(),
+    value: z.union([z.number(), z.null()]).optional(),
+    closeDate: z.union([z.string(), z.null()]).optional(),
+    stage: z.union([z.string(), z.null()]).optional(),
     confidence: z.number().min(0).max(100).default(0),
   }),
 });
