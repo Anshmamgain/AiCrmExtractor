@@ -1,42 +1,20 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist/public"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/extract",
-      "dest": "/api/extract.ts"
-    },
-    {
-      "src": "/api/sync-to-hubspot",
-      "dest": "/api/sync-to-hubspot.ts"
-    },
-    {
-      "src": "/api/hubspot/test",
-      "dest": "/api/hubspot-test.ts"
-    },
-    {
-      "src": "/api/extractions",
-      "dest": "/api/extractions.ts"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/dist/public/$1"
-    }
-  ],
+  "buildCommand": "npm run vercel-build",
+  "outputDirectory": "dist/public",
   "functions": {
     "api/**/*.ts": {
       "maxDuration": 30
     }
   },
-  "env": {
-    "NODE_ENV": "production"
-  }
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/dist/public/$1"
+    }
+  ]
 } 
