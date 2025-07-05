@@ -51,7 +51,9 @@ const openai = new OpenAI({
 });
 
 async function extractCRMData(meetingSummary: string): Promise<ExtractedData> {
-  const response = await openai.chat.completions.create({
+  try {
+    console.log("Making OpenAI API call...");
+    const response = await openai.chat.completions.create({
     model: "gpt-4o",
     messages: [
       {
@@ -104,6 +106,14 @@ async function extractCRMData(meetingSummary: string): Promise<ExtractedData> {
 
   const extractedJson = JSON.parse(response.choices[0].message.content || "{}");
   return extractedDataSchema.parse(extractedJson);
+  } catch (error) {
+    console.error("OpenAI API call failed:", error);
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    }
+    throw error;
+  }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -112,6 +122,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   console.log("Environment check:");
   console.log("- DATABASE_URL exists:", !!process.env.DATABASE_URL);
   console.log("- OPENAI_API_KEY exists:", !!process.env.OPENAI_API_KEY);
+  console.log("- OPENAI_API_KEY length:", process.env.OPENAI_API_KEY?.length || 0);
+  console.log("- OPENAI_API_KEY prefix:", process.env.OPENAI_API_KEY?.substring(0, 20) || "undefined");
+  console.log("- All env vars with OPENAI:", Object.keys(process.env).filter(key => key.includes('OPENAI')));
   
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
