@@ -1,0 +1,194 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(217, 33%, 97%);
+  --foreground: hsl(215, 25%, 27%);
+  --muted: hsl(210, 40%, 95%);
+  --muted-foreground: hsl(215, 16%, 47%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(215, 25%, 27%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(215, 25%, 27%);
+  --border: hsl(214, 32%, 91%);
+  --input: hsl(214, 32%, 91%);
+  --primary: hsl(248, 69%, 60%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(262, 83%, 70%);
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --accent: hsl(210, 40%, 95%);
+  --accent-foreground: hsl(215, 25%, 27%);
+  --destructive: hsl(0, 72%, 51%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --ring: hsl(248, 69%, 60%);
+  --radius: 0.75rem;
+  
+  /* Custom CRM Assistant colors matching the style guide */
+  --crm-primary: hsl(248, 69%, 60%);    /* #6366F1 indigo */
+  --crm-secondary: hsl(262, 83%, 70%);   /* #8B5CF6 purple */
+  --crm-background: hsl(217, 33%, 97%);  /* #F8FAFC light grey */
+  --crm-text-primary: hsl(215, 25%, 27%); /* #1E293B slate */
+  --crm-success: hsl(162, 73%, 46%);     /* #10B981 emerald */
+  --crm-error: hsl(0, 72%, 51%);        /* #EF4444 red */
+  
+  /* Additional glassmorphism variables */
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-shadow: rgba(0, 0, 0, 0.1);
+}
+
+.dark {
+  --background: hsl(222, 84%, 5%);
+  --foreground: hsl(210, 40%, 98%);
+  --muted: hsl(217, 32%, 17%);
+  --muted-foreground: hsl(215, 20%, 65%);
+  --popover: hsl(222, 84%, 5%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --card: hsl(222, 84%, 5%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --border: hsl(217, 32%, 17%);
+  --input: hsl(217, 32%, 17%);
+  --primary: hsl(248, 85%, 67%);
+  --primary-foreground: hsl(222, 47%, 11%);
+  --secondary: hsl(217, 32%, 17%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --accent: hsl(217, 32%, 17%);
+  --accent-foreground: hsl(210, 40%, 98%);
+  --destructive: hsl(0, 62%, 30%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(212, 72%, 59%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+@layer components {
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 8px 32px var(--glass-shadow), 
+                0 4px 16px rgba(99, 102, 241, 0.08);
+    transition: all 0.3s ease;
+  }
+  
+  .glass-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px var(--glass-shadow), 
+                0 8px 24px rgba(99, 102, 241, 0.12);
+  }
+  
+  .glass-card-dark {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08),
+                0 8px 20px rgba(99, 102, 241, 0.06),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    transition: all 0.3s ease;
+  }
+  
+  .neomorphism {
+    background: linear-gradient(145deg, hsl(217, 33%, 98%), hsl(217, 33%, 95%));
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 
+      12px 12px 24px rgba(163, 177, 198, 0.15),
+      -12px -12px 24px rgba(255, 255, 255, 0.8),
+      inset 2px 2px 4px rgba(255, 255, 255, 0.4),
+      inset -2px -2px 4px rgba(163, 177, 198, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .neomorphism:focus-within {
+    box-shadow: 
+      8px 8px 16px rgba(163, 177, 198, 0.2),
+      -8px -8px 16px rgba(255, 255, 255, 0.9),
+      inset 2px 2px 6px rgba(99, 102, 241, 0.1),
+      inset -2px -2px 6px rgba(139, 92, 246, 0.05);
+  }
+  
+  .gradient-bg {
+    background: linear-gradient(135deg, 
+      hsl(248, 69%, 60%) 0%, 
+      hsl(262, 83%, 70%) 50%,
+      hsl(248, 69%, 65%) 100%);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+  }
+  
+  .gradient-bg:hover {
+    background: linear-gradient(135deg, 
+      hsl(248, 69%, 65%) 0%, 
+      hsl(262, 83%, 75%) 50%,
+      hsl(248, 69%, 70%) 100%);
+    box-shadow: 0 12px 32px rgba(99, 102, 241, 0.4);
+  }
+  
+  .fade-in {
+    animation: fadeIn 0.6s ease-out;
+  }
+  
+  .slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+  
+  @keyframes fadeIn {
+    from { 
+      opacity: 0; 
+      transform: translateY(20px) scale(0.98); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0) scale(1); 
+    }
+  }
+  
+  @keyframes slideUp {
+    from { 
+      opacity: 0; 
+      transform: translateY(30px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+  }
+  
+  .confidence-high { @apply bg-emerald-500; }
+  .confidence-medium { @apply bg-blue-500; }
+  .confidence-low { @apply bg-yellow-500; }
+  .confidence-very-low { @apply bg-red-500; }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+/* Poppins font for headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
