@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { useSpeechToText } from "@/hooks/use-speech-to-text";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import { 
@@ -25,7 +26,10 @@ import {
   AlertTriangle,
   Settings,
   History,
-  Cog
+  Cog,
+  Mic,
+  MicOff,
+  Volume2
 } from "lucide-react";
 import type { ExtractedData } from "@shared/schema";
 
@@ -45,9 +49,37 @@ export default function Home() {
   });
   
   const { toast } = useToast();
+  const {
+    isListening,
+    transcript,
+    error: speechError,
+    isSupported,
+    startListening,
+    stopListening,
+    resetTranscript,
+  } = useSpeechToText();
+
+  // Sync transcript with meeting summary
+  useEffect(() => {
+    if (transcript) {
+      setMeetingSummary(prev => prev + transcript);
+      resetTranscript();
+    }
+  }, [transcript, resetTranscript]);
+
+  // Show speech error as toast
+  useEffect(() => {
+    if (speechError) {
+      toast({
+        variant: "destructive",
+        title: "Speech recognition error",
+        description: speechError,
+      });
+    }
+  }, [speechError, toast]);
 
   // Test HubSpot connection
-  const { data: hubspotStatus } = useQuery({
+  const { data: hubspotStatus } = useQuery<{ connected: boolean }>({
     queryKey: ["/api/hubspot/test"],
     refetchInterval: 30000, // Check every 30 seconds
   });
@@ -185,10 +217,49 @@ export default function Home() {
                   value={meetingSummary}
                   onChange={(e) => setMeetingSummary(e.target.value)}
                   placeholder="Example: Had a great meeting with John Smith from Acme Corp today. They're looking for a CRM solution for their 50-person sales team. Budget is around $10k monthly. John is the VP of Sales, email: john.smith@acme.com. They want to implement by Q2 2024..."
-                  className="neomorphism min-h-[160px] resize-none border-0 focus:ring-2 focus:ring-primary/50"
+                  className="neomorphism min-h-[160px] resize-none border-0 focus:ring-2 focus:ring-primary/50 pr-20"
                   style={{ background: "hsl(217, 33%, 97%)" }}
                   maxLength={2000}
                 />
+                
+                {/* Voice Input Controls */}
+                <div className="absolute top-4 right-4 flex items-center space-x-2">
+                  {isSupported ? (
+                    <>
+                      <Button
+                        type="button"
+                        variant={isListening ? "destructive" : "outline"}
+                        size="sm"
+                        onClick={isListening ? stopListening : startListening}
+                        className={cn(
+                          "p-2 transition-all duration-200",
+                          isListening 
+                            ? "bg-red-500 hover:bg-red-600 text-white shadow-lg animate-pulse" 
+                            : "glass-card hover:shadow-md"
+                        )}
+                        title={isListening ? "Stop recording" : "Start voice input"}
+                      >
+                        {isListening ? (
+                          <MicOff size={16} />
+                        ) : (
+                          <Mic size={16} />
+                        )}
+                      </Button>
+                      
+                      {isListening && (
+                        <div className="flex items-center space-x-1 glass-card px-2 py-1 text-xs text-gray-600">
+                          <Volume2 size={12} className="animate-pulse" />
+                          <span>Listening...</span>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-xs text-gray-400 glass-card px-2 py-1">
+                      Voice input not supported
+                    </div>
+                  )}
+                </div>
+                
                 <div className="absolute bottom-4 right-4 text-xs text-gray-400">
                   {meetingSummary.length}/2000 characters
                 </div>
